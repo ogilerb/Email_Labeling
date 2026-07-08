@@ -1,0 +1,61 @@
+# --- Gemini ---
+gemini:
+  # Get a key at https://aistudio.google.com/apikey
+  # You can put it here, or (better) set GEMINI_API_KEY in your environment / .env file.
+  api_key: ""
+  model: "gemini-2.5-flash"
+
+# --- Labels ---
+# Edit these however you like. The description tells Gemini what belongs in each label.
+# In Gmail these become labels; in Outlook they become categories.
+labels:
+  - name: "Can Delete"
+    description: >-
+      Emails that are definitely safe to delete: expired promotions and sales,
+      old marketing blasts, outdated event invitations, expired verification
+      codes and one-time passwords, old shipping/delivery notifications for
+      items long since received, social media notifications, and automated
+      alerts with no lasting value. NEVER use this for anything personal,
+      financial, legal, work-related, or containing receipts, tickets,
+      passwords, or account information — when in doubt, pick another label.
+  - name: "Action Required"
+    description: "Emails that need a reply, decision, or task from me (questions, requests, deadlines, bills to pay)."
+  - name: "Waiting / FYI"
+    description: "Status updates, confirmations, and informational emails that need no action."
+  - name: "Newsletters"
+    description: "Recurring newsletters, digests, and content subscriptions."
+  - name: "Promotions"
+    description: "Marketing, sales, discounts, and promotional offers."
+  - name: "Receipts & Orders"
+    description: "Purchase receipts, order confirmations, shipping and delivery notifications."
+  - name: "Finance"
+    description: "Bank statements, payment alerts, tax, insurance, and investment emails."
+  - name: "Travel"
+    description: "Flight/hotel/train bookings, itineraries, and check-in reminders."
+  - name: "Personal"
+    description: "Emails from friends and family, personal conversations."
+
+# --- Gmail ---
+gmail:
+  enabled: true
+  # Path to the OAuth client file downloaded from Google Cloud Console (Desktop app credentials).
+  credentials_file: "credentials.json"
+  # Gmail search query for which emails to consider.
+  query: "in:inbox"
+
+# --- Outlook ---
+outlook:
+  enabled: true
+  # Application (client) ID from your Azure app registration.
+  client_id: ""
+  # "consumers" for personal outlook.com accounts, "common" for work/school + personal.
+  authority: "https://login.microsoftonline.com/consumers"
+
+# --- Run settings ---
+run:
+  # Max emails to classify per account per run.
+  max_emails: 25
+  # How many emails to send to Gemini in one request.
+  batch_size: 10
+  # Max characters of email body to send to Gemini.
+  body_chars: 1500
