@@ -3,6 +3,7 @@
 import base64
 import os
 
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -22,9 +23,16 @@ class GmailClient:
         if os.path.exists(TOKEN_FILE):
             creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
         if not creds or not creds.valid:
+            refreshed = False
             if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
+                try:
+                    creds.refresh(Request())
+                    refreshed = True
+                except RefreshError:
+                    # Stored refresh token was revoked or expired: discard it
+                    # and fall through to a fresh interactive login.
+                    creds = None
+            if not refreshed:
                 if not os.path.exists(credentials_file):
                     raise FileNotFoundError(
                         f"Gmail OAuth client file not found: {credentials_file}. "

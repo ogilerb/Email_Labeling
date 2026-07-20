@@ -47,11 +47,17 @@ def batched(iterable, size):
         yield batch
 
 
-def classify_and_apply(provider_name, emails, classifier, apply_fn, prep_fn, batch_size, dry_run):
+def classify_and_apply(
+    provider_name, emails, classifier, apply_fn, prep_fn, batch_size, dry_run, fallback_label
+):
     """Consume `emails` (an iterator) in batches, classifying and labeling as we go.
 
     Labels are applied incrementally, so interrupting (Ctrl+C) or hitting the
     Gemini rate limit keeps everything labeled so far — rerunning resumes.
+
+    When Gemini can't classify an email (or it's blocked by the safety filter),
+    `fallback_label` is applied if set, so every processed email ends up labeled
+    and won't be reprocessed on the next run.
     """
     labeled = skipped = seen = 0
     try:
@@ -62,6 +68,8 @@ def classify_and_apply(provider_name, emails, classifier, apply_fn, prep_fn, bat
             seen += len(batch)
             for email, label in zip(batch, labels):
                 subject = truncate(email["subject"], 60) or "(no subject)"
+                if label is None:
+                    label = fallback_label  # None if no fallback configured
                 if label is None:
                     print(f"  - skip: {subject}")
                     skipped += 1
@@ -113,6 +121,7 @@ def run_gmail(config, classifier, args):
         lambda email: email.update(body=truncate(email["body"], body_chars)),
         config["run"]["batch_size"],
         args.dry_run,
+        config["run"].get("fallback_label") or None,
     )
 
 
@@ -139,6 +148,7 @@ def run_outlook(config, classifier, args):
         lambda email: email.update(body=truncate(email["body"], body_chars)),
         config["run"]["batch_size"],
         args.dry_run,
+        config["run"].get("fallback_label") or None,
     )
 
 
@@ -163,6 +173,14 @@ def main():
         sys.exit(
             "No Gemini API key. Set GEMINI_API_KEY (env or .env file) or "
             "gemini.api_key in config.yaml. Get one at https://aistudio.google.com/apikey"
+        )
+
+    fallback = config["run"].get("fallback_label")
+    label_names = {l["name"] for l in config["labels"]}
+    if fallback and fallback not in label_names:
+        sys.exit(
+            f'run.fallback_label "{fallback}" is not one of your labels. '
+            "Add it under labels: in config.yaml, or set fallback_label to \"\"."
         )
 
     classifier = GeminiClassifier(api_key, config["gemini"]["model"], config["labels"])

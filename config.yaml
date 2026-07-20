@@ -1,7 +1,5 @@
 # --- Gemini ---
 gemini:
-  # Get a key at https://aistudio.google.com/apikey
-  # You can put it here, or (better) set GEMINI_API_KEY in your environment / .env file.
   api_key: ""
   model: "gemini-2.5-flash"
 
@@ -20,7 +18,7 @@ labels:
       passwords, or account information — when in doubt, pick another label.
   - name: "Action Required"
     description: "Emails that need a reply, decision, or task from me (questions, requests, deadlines, bills to pay)."
-  - name: "Waiting / FYI"
+  - name: "Waiting or FYI"
     description: "Status updates, confirmations, and informational emails that need no action."
   - name: "Newsletters"
     description: "Recurring newsletters, digests, and content subscriptions."
@@ -34,6 +32,8 @@ labels:
     description: "Flight/hotel/train bookings, itineraries, and check-in reminders."
   - name: "Personal"
     description: "Emails from friends and family, personal conversations."
+  - name: "Other"
+    description: "Catch-all for anything that doesn't clearly fit another label."
 
 # --- Gmail ---
 gmail:
@@ -45,7 +45,7 @@ gmail:
 
 # --- Outlook ---
 outlook:
-  enabled: true
+  enabled: false
   # Application (client) ID from your Azure app registration.
   client_id: ""
   # "consumers" for personal outlook.com accounts, "common" for work/school + personal.
@@ -59,3 +59,8 @@ run:
   batch_size: 10
   # Max characters of email body to send to Gemini.
   body_chars: 1500
+  # Label applied when Gemini can't classify an email or it's blocked by the
+  # safety filter. This ensures every processed email ends up labeled, so it's
+  # excluded from future runs (no reprocessing). Must match a label name above.
+  # Set to "" to leave such emails unlabeled instead.
+  fallback_label: "Other"
